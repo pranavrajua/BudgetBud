@@ -470,16 +470,6 @@ useEffect(() => {
           <section className="m-card" style={{ margin: '40px auto', maxWidth: 400 }}>
             <h2 style={{ marginBottom: 16 }}>Welcome to Budget Bud</h2>
             <div className="m-field">
-              <label className="m-label">Secret Code</label>
-              <input
-                className="m-input"
-                placeholder="1234"
-                value={household}
-                onChange={e => setHousehold(e.target.value)}
-                style={{ marginBottom: 12 }}
-              />
-            </div>
-            <div className="m-field">
               <label className="m-label">Email</label>
               <input
                 className="m-input"
@@ -489,14 +479,24 @@ useEffect(() => {
                 style={{ marginBottom: 12 }}
               />
             </div>
+            <div className="m-field">
+              <label className="m-label">Secret Code</label>
+              <input
+                className="m-input"
+                placeholder="1234"
+                value={household}
+                onChange={e => setHousehold(e.target.value)}
+                style={{ marginBottom: 12 }}
+              />
+            </div>
             <button
               className="m-btn m-btn--primary"
               style={{ width: '100%' }}
               onClick={async () => {
-                if (!household) return alert('Enter a household code')
                 if (!email) return alert('Enter your email')
-                localStorage.setItem('household_id', household)
+                if (!household) return alert('Enter the secret code')
                 localStorage.setItem('email', email)
+                localStorage.setItem('household_id', household)
                 setOnboarding(false)
                 setHousehold(household)
                 setEmail(email)
@@ -506,7 +506,7 @@ useEffect(() => {
                   alert('Check your email for the sign-in link')
                 }
               }}
-            >Continue & Sign In</button>
+            >Sign In</button>
             
           </section>
         </main>
