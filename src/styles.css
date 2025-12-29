@@ -1,0 +1,119 @@
+/* Material-like CSS with light/dark variables (Roboto recommended) */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+:root{
+  /* light */
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --text: #111827;
+  --accent: #f9713b;        /* orange accent */
+  --accent-soft: #fff0e6;
+  --input-bg: #ffffff;
+  --input-border: rgba(17,24,39,0.06);
+  --input-placeholder: rgba(107,114,128,0.5);
+  --accent-ghost: rgba(249,113,59,0.12);
+  --txn-border: rgba(17,24,39,0.03);
+  --e1: 0 2px 6px rgba(17,24,39,0.06);
+  --e2: 0 8px 24px rgba(17,24,39,0.08);
+  --radius: 12px;
+}
+
+/* dark theme — moderate, ChatGPT-like (not bluish) */
+:root[data-theme="dark"]{
+  --bg: #0b1220;        /* deep charcoal, matches app/device dark panels */
+  --surface: #0e1624;   /* slightly lighter panel */
+  --muted: #9aa6b2;
+  --text: #dfeaf2;
+  --accent: #ff8a33;    /* orange accent visible on dark */
+  --accent-soft: #3b2412;
+  --input-bg: #0f1724;
+  --input-border: rgba(255,255,255,0.06);
+  --input-placeholder: rgba(255,255,255,0.48);
+  --accent-ghost: rgba(255,138,51,0.14);
+  --txn-border: rgba(255,255,255,0.04);
+  --e1: 0 2px 6px rgba(0,0,0,0.6);
+  --e2: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+/* reset */
+*{box-sizing:border-box}
+body{margin:0;font-family:Roboto, system-ui, -apple-system, 'Segoe UI', Arial;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.m-root{min-height:100vh;display:flex;flex-direction:column}
+
+/* Appbar */
+.m-appbar{height:64px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:0 20px;box-shadow:var(--e1);position:sticky;top:0;z-index:10}
+.m-appbar-left{display:flex;align-items:center;gap:12px}
+.m-logo{width:40px;height:40;border-radius:8px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--accent)}
+.m-logo-svg{color:var(--accent);display:block}
+.m-title{font-weight:600;font-size:18px}
+.m-appbar-right{display:flex;gap:8px;align-items:center}
+.m-icon{background:transparent;border:0;padding:8px;border-radius:8px;cursor:pointer}
+
+/* container/grid */
+.m-container{max-width:1100px;margin:20px auto;padding:0 16px}
+.m-grid{display:grid;grid-template-columns:1.4fr 1fr 1.6fr;gap:18px;align-items:start}
+
+/* card */
+.m-card{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--e2);display:flex;flex-direction:column;gap:12px}
+.m-card-head{display:flex;align-items:center;justify-content:space-between}
+.m-card-title{margin:0;font-size:14px}
+
+/* balance */
+.m-balance-amount{font-size:22px;font-weight:700;color:var(--text)}
+.m-accounts{display:flex;flex-direction:column;gap:6px}
+.m-row{display:flex;justify-content:space-between;color:var(--muted);font-size:14px}
+
+/* form */
+.m-form{display:flex;flex-direction:column;gap:12px}
+.m-form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.m-field{display:flex;flex-direction:column;gap:6px;min-width:160px;flex:1}
+.m-label{font-size:12px;color:var(--muted);font-weight:500}
+.m-input,.m-select, .theme-select select{padding:10px;border-radius:8px;border:1px solid var(--input-border);background:var(--input-bg);font-size:14px;color:var(--text);-webkit-appearance:none;appearance:none}
+.m-input::placeholder{color:var(--input-placeholder)}
+
+/* focus / interaction */
+.m-input:focus,.m-select:focus{outline:0;box-shadow:0 6px 20px var(--accent-ghost);border-color:color-mix(in srgb, var(--accent) 50%, transparent)}
+.m-select{background-repeat:no-repeat;background-position:calc(100% - 12px) center;background-size:12px 12px;padding-right:36px}
+
+/* transaction and subtle borders responsive to theme */
+.m-txn{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;border:1px solid var(--txn-border)}
+.m-amount{width:140px}
+
+/* Autocomplete (custom dropdown for themed suggestions) */
+.autocomplete{position:relative}
+.autocomplete .m-input{position:relative;z-index:1}
+.autocomplete-list{position:absolute;left:0;right:0;top:calc(100% + 8px);background:var(--surface);border:1px solid var(--input-border);box-shadow:var(--e2);border-radius:10px;max-height:240px;overflow:auto;z-index:60;padding:6px 0}
+.autocomplete-item{padding:8px 12px;cursor:pointer;color:var(--text);font-size:14px}
+.autocomplete-item:hover,.autocomplete-item.focused{background:var(--accent-ghost)}
+
+/* toggle button (chevron) inside autocomplete */
+.autocomplete-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);border-radius:6px;border:0;background:transparent;color:var(--muted);padding:6px 8px;cursor:pointer;font-size:14px}
+.autocomplete-toggle:hover{background:var(--accent-ghost);color:var(--accent)}
+.autocomplete .m-input{padding-right:44px}
+.m-actions{display:flex;gap:8px;justify-content:flex-end}
+.m-btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+.m-btn--primary{background:var(--accent);color:white}
+.m-btn--ghost{background:transparent;border:1px solid rgba(17,24,39,0.04);color:var(--muted)}
+
+/* transactions list */
+.m-txn-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.m-txn{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;border:1px solid rgba(17,24,39,0.03)}
+.m-txn-left{display:flex;flex-direction:column}
+.m-txn-title{font-weight:600}
+.m-txn-sub{font-size:12px;color:var(--muted)}
+.m-txn-right{display:flex;align-items:center;gap:10px}
+.m-amt{font-weight:700}
+.m-amt.positive{color:var(--accent)}
+.m-amt.negative{color:#e24b3a}
+.m-icon-small{background:transparent;border:0;cursor:pointer}
+.m-empty{padding:12px;color:var(--muted)}
+
+/* FAB */
+.m-fab{position:fixed;right:28px;bottom:28px;width:56px;height:56px;border-radius:999px;border:0;background:var(--accent);color:white;font-size:26px;box-shadow:0 12px 36px rgba(16,24,40,0.18);cursor:pointer}
+
+/* responsive */
+@media (max-width:980px){
+  .m-grid{grid-template-columns:1fr;gap:14px}
+  .m-amount{width:100%}
+}
