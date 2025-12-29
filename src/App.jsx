@@ -470,10 +470,10 @@ useEffect(() => {
           <section className="m-card" style={{ margin: '40px auto', maxWidth: 400 }}>
             <h2 style={{ marginBottom: 16 }}>Welcome to Budget Bud</h2>
             <div className="m-field">
-              <label className="m-label">Household Code</label>
+              <label className="m-label">Secret Code</label>
               <input
                 className="m-input"
-                placeholder="Enter a shared code (e.g. 0407)"
+                placeholder="1234"
                 value={household}
                 onChange={e => setHousehold(e.target.value)}
                 style={{ marginBottom: 12 }}
@@ -507,9 +507,7 @@ useEffect(() => {
                 }
               }}
             >Continue & Sign In</button>
-            <div style={{ marginTop: 8, fontSize: 13, color: 'var(--muted)' }}>
-              Signing in will persist your transactions to Supabase.<br />Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> in <code>.env</code>.
-            </div>
+            
           </section>
         </main>
       </div>
