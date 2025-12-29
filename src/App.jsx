@@ -251,6 +251,10 @@ export default function App() {
   const [incomeKind, setIncomeKind] = useState('OCTO');
   const [theme, setTheme] = useState('system'); // 'system' | 'light' | 'dark'
   const [household, setHousehold] = useState(() => localStorage.getItem('household_id') || '');
+  const [password, setPassword] = useState('');
+  const [onboardingStep, setOnboardingStep] = useState('initial'); // 'initial' | 'enterPassword' | 'createPassword'
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [onboarding, setOnboarding] = useState(() => {
     return !localStorage.getItem('household_id') || !localStorage.getItem('email');
   });
@@ -462,52 +466,154 @@ useEffect(() => {
 
   const navigate = useNavigate();
 
-  // Onboarding screen: ask for household code and email, then sign in
+  // Onboarding: staged flow (email + code first)
   if (onboarding || !user || !household) {
+    const initialForm = (
+      <>
+        <h2 style={{ marginBottom: 16 }}>Budget Bud</h2>
+        <div className="m-field">
+          <label className="m-label">Email</label>
+          <input
+            className="m-input"
+            placeholder="you@example.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            style={{ marginBottom: 12 }}
+          />
+        </div>
+        <div className="m-field">
+          <label className="m-label">Secret Code</label>
+          <input
+            className="m-input"
+            placeholder="1234"
+            value={household}
+            onChange={e => setHousehold(e.target.value)}
+            style={{ marginBottom: 12 }}
+          />
+        </div>
+        <button
+          className="m-btn m-btn--primary"
+          style={{ width: '100%' }}
+          onClick={async () => {
+            if (!email) return alert('Enter your email')
+            if (!household) return alert('Enter the secret code')
+            if (household.length < 4) return alert('Secret code must be at least 4 characters')
+            // Save basics locally
+            localStorage.setItem('email', email)
+            localStorage.setItem('household_id', household)
+            // Call serverless endpoint to check whether this email has a password identity
+            try {
+              const resp = await fetch(`/api/check-password?email=${encodeURIComponent(email)}`)
+              const json = await resp.json()
+              if (!resp.ok) {
+                console.warn('check-password failed', json)
+                // fallback to create password
+                setOnboardingStep('createPassword')
+                return
+              }
+              if (json.found && json.hasPassword) {
+                setOnboardingStep('enterPassword')
+              } else {
+                setOnboardingStep('createPassword')
+              }
+            } catch (e) {
+              console.error('check-password call failed', e)
+              setOnboardingStep('createPassword')
+            }
+          }}
+        >Next</button>
+      </>
+    )
+
+    const enterPasswordForm = (
+      <>
+        <h2 style={{ marginBottom: 16 }}>Welcome back</h2>
+        <div className="m-field">
+          <label className="m-label">Email</label>
+          <input className="m-input" value={email} readOnly style={{ marginBottom: 12 }} />
+        </div>
+        <div className="m-field">
+          <label className="m-label">Secret Code</label>
+          <input className="m-input" value={household} readOnly style={{ marginBottom: 12 }} />
+        </div>
+        <div className="m-field">
+          <label className="m-label">Password</label>
+          <input type="password" className="m-input" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} style={{ marginBottom: 12 }} />
+        </div>
+        <button className="m-btn m-btn--primary" style={{ width: '100%' }} onClick={async () => {
+          if (!password) return alert('Enter your password')
+          try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+            if (error) return alert('Sign-in error: ' + error.message)
+            // signed in
+            setOnboarding(false)
+            setHousehold(household)
+            setEmail(email)
+            alert('Signed in')
+          } catch (e) {
+            console.error(e)
+            alert('Sign-in failed')
+          }
+        }}>Sign In</button>
+      </>
+    )
+
+    const createPasswordForm = (
+      <>
+        <h2 style={{ marginBottom: 16 }}>Create a password</h2>
+        <div className="m-field">
+          <label className="m-label">Email</label>
+          <input className="m-input" value={email} readOnly style={{ marginBottom: 12 }} />
+        </div>
+        <div className="m-field">
+          <label className="m-label">Secret Code</label>
+          <input className="m-input" value={household} readOnly style={{ marginBottom: 12 }} />
+        </div>
+        <div className="m-field">
+          <label className="m-label">New Password</label>
+          <input type="password" className="m-input" placeholder="Choose a password" value={newPassword} onChange={e => setNewPassword(e.target.value)} style={{ marginBottom: 12 }} />
+        </div>
+        <div className="m-field">
+          <label className="m-label">Confirm Password</label>
+          <input type="password" className="m-input" placeholder="Confirm password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} style={{ marginBottom: 12 }} />
+        </div>
+        <button className="m-btn m-btn--primary" style={{ width: '100%' }} onClick={async () => {
+          if (!newPassword) return alert('Enter a password')
+          if (newPassword !== confirmPassword) return alert('Passwords do not match')
+          try {
+            // Call privileged endpoint to set or create password
+            const resp = await fetch('/api/set-password', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password: newPassword })
+            })
+            const json = await resp.json()
+            if (!resp.ok) {
+              console.error('set-password failed', json)
+              return alert('Failed to set password: ' + (json?.error || resp.statusText))
+            }
+            // Now sign in with the new password to create a session
+            const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: newPassword })
+            if (signInError) return alert('Sign-in failed: ' + signInError.message)
+            setOnboarding(false)
+            setHousehold(household)
+            setEmail(email)
+            alert('Password saved and signed in')
+          } catch (e) {
+            console.error(e)
+            alert('Failed to set password')
+          }
+        }}>Create Password</button>
+      </>
+    )
+
     return (
       <div className="m-root">
         <main className="m-container">
           <section className="m-card" style={{ margin: '40px auto', maxWidth: 400 }}>
-            <h2 style={{ marginBottom: 16 }}>Welcome to Budget Bud</h2>
-            <div className="m-field">
-              <label className="m-label">Email</label>
-              <input
-                className="m-input"
-                placeholder="you@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                style={{ marginBottom: 12 }}
-              />
-            </div>
-            <div className="m-field">
-              <label className="m-label">Secret Code</label>
-              <input
-                className="m-input"
-                placeholder="1234"
-                value={household}
-                onChange={e => setHousehold(e.target.value)}
-                style={{ marginBottom: 12 }}
-              />
-            </div>
-            <button
-              className="m-btn m-btn--primary"
-              style={{ width: '100%' }}
-              onClick={async () => {
-                if (!email) return alert('Enter your email')
-                if (!household) return alert('Enter the secret code')
-                localStorage.setItem('email', email)
-                localStorage.setItem('household_id', household)
-                setOnboarding(false)
-                setHousehold(household)
-                setEmail(email)
-                if (supabase) {
-                  const { error } = await supabase.auth.signInWithOtp({ email })
-                  if (error) return alert('Sign-in error: ' + error.message)
-                  alert('Check your email for the sign-in link')
-                }
-              }}
-            >Sign In</button>
-            
+            {onboardingStep === 'initial' && initialForm}
+            {onboardingStep === 'enterPassword' && enterPasswordForm}
+            {onboardingStep === 'createPassword' && createPasswordForm}
           </section>
         </main>
       </div>
